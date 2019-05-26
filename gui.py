@@ -1,4 +1,4 @@
-from tkinter import Tk, Frame
+from tkinter import Tk, Frame, messagebox
 from tkinter import Entry, Label, Button
 from solver import draw_solution
 
@@ -115,17 +115,23 @@ class Application(Frame):
         self.b4_label.grid(row=2, column=10)
 
         # solve button
-        self.solve_button = Button(self, text='Solve', command=lambda: draw_solution(
-            int(self.T_entry.get()),
-            int(self.l_entry.get()),
-            float(self.a_entry.get()),
-            float(self.h_entry.get()),
-            float(self.tau_entry.get()),
-            [float(self.fi0_entry.get()), float(self.fi1_entry.get()), float(self.fi2_entry.get())],
-            [float(self.b0_entry.get()), float(self.b1_entry.get()), float(self.b2_entry.get()),
-             float(self.b3_entry.get()), float(self.b4_entry.get())]
-        ))
+        self.solve_button = Button(self, text='Solve', command=self.solve)
         self.solve_button.grid(row=4, column=0)
+    
+    def solve(self):
+        try:
+            draw_solution(
+                int(self.T_entry.get()),
+                int(self.l_entry.get()),
+                float(self.a_entry.get()),
+                float(self.h_entry.get()),
+                float(self.tau_entry.get()),
+                [float(self.fi0_entry.get()), float(self.fi1_entry.get()), float(self.fi2_entry.get())],
+                [float(self.b0_entry.get()), float(self.b1_entry.get()), float(self.b2_entry.get()),
+                float(self.b3_entry.get()), float(self.b4_entry.get())]
+            )
+        except ValueError as error:
+            messagebox.showerror(title='Error', message=str(error))
 
 
 def main():

@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.integrate import simps
+from scipy.interpolate import CubicSpline
 from copy import deepcopy
 
 
@@ -42,10 +43,12 @@ def RightConst(y, l, tau, b_params, h, size):
     
     simpson *= h/3
     
-    #simpson = simps([FuncB(i, l, fb) for i in range(size)], [i*h for i in range(size)])
-
+    #simpson = simps([FuncB(i, l, fb) for i in range(size)], [i*h for i in range(size)]
+    
     for i in range(1, size-1):
         result[i] = y[i] * ((1 / tau) + FuncB(i * h, l, b_params) - simpson)
+        if np.isnan(result[i]):
+            raise ValueError('Explosion')
 
     return result
 
@@ -54,10 +57,9 @@ def draw_solution(T, l, a, h, tau, fi_params, b_params):
     size = int(l/h)+1
 
     B = np.zeros((size, size))
-    yb = np.zeros(size)
     
     y = [FuncFi(i*h, l, fi_params) for i in range(size)]
-    y0 = [FuncFi(i*h, l, fi_params) for i in range(size)]
+    fi = [FuncFi(i*h, l, fi_params) for i in range(size)]
     b = [FuncB(i*h, l, b_params) for i in range(size)]
 
     coef1 = -a**2/h**2
@@ -76,23 +78,22 @@ def draw_solution(T, l, a, h, tau, fi_params, b_params):
     B[size-1][size-1] = 1
     print(B)
 
-    for i in range(size-1):
-        yb[i + 1] = y[i]
-
-    yb[0] = 0
-    yb[size-1] = 0
+    y[0] = 0
+    y[size-1] = 0
 
     for i in range(1, T + 1):
-        tmp_y = RightConst(yb, l, tau, b_params, h, size)
-        yb = np.linalg.solve(B, tmp_y)
-        # print(f'tmp_y = {tmp_y}')
-        # print(f'yb = {yb}')
+        y = np.linalg.solve(B, RightConst(y, l, tau, b_params, h, size))
+        print(f'y = {y}')
 
     x = [i * h for i in range(size)]
 
     plt.plot(x, b, 'r')
-    plt.plot(x, y0, 'b')
-    plt.plot(x, yb, 'black')
+    plt.plot(x, fi, 'b')
+    plt.plot(x, y, 'black')
+
+    '''cs = CubicSpline(x, y, bc_type='natural')
+    xs = np.arange(0, l, h/5)
+    plt.plot(xs, cs(xs), 'g')'''
 
     plt.grid()
     plt.show()
